@@ -9,14 +9,6 @@ export interface UseFiltersOptions<TSchema extends AnySchema> {
   basePath?: string;
 }
 
-/**
- * Generic hook for managing URL-synced filters with any router
- * @param schema - Zod schema for filter validation
- * @param getSearch - Function to get current search string
- * @param pushUrl - Function to navigate to new URL
- * @param opts - Options for parsing and building
- * @returns Filter state and actions
- */
 export function useFiltersGeneric<TSchema extends AnySchema>(
   schema: TSchema,
   getSearch: () => string,
@@ -36,7 +28,7 @@ export function useFiltersGeneric<TSchema extends AnySchema>(
         stripUnknown: true,
         ...opts.parse,
       }),
-    [schema, search, opts.parse?.arrayFormat] // basic deps
+    [schema, search, opts.parse?.arrayFormat]
   );
 
   const setFilters = React.useCallback(
@@ -72,19 +64,12 @@ export function useFiltersGeneric<TSchema extends AnySchema>(
   return { filters, setFilters, reset } as const;
 }
 
-/**
- * Hook for managing filters with Next.js App Router
- * Uses useSearchParams and useRouter from next/navigation
- * @param schema - Zod schema for filter validation
- * @param opts - Options for parsing and building
- * @returns Filter state and actions
- */
 export function useNextAppFilters<TSchema extends AnySchema>(
   schema: TSchema,
   opts: UseFiltersOptions<TSchema> = {}
 ) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const nextNav = require("next/navigation") as any;
     const router = nextNav.useRouter();
     const searchParams = nextNav.useSearchParams();
@@ -101,19 +86,12 @@ export function useNextAppFilters<TSchema extends AnySchema>(
   }
 }
 
-/**
- * Hook for managing filters with Next.js Pages Router
- * Uses useRouter from next/router
- * @param schema - Zod schema for filter validation
- * @param opts - Options for parsing and building
- * @returns Filter state and actions
- */
 export function useNextPagesFilters<TSchema extends AnySchema>(
   schema: TSchema,
   opts: UseFiltersOptions<TSchema> = {}
 ) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const nextRouter = require("next/router") as any;
     const router = nextRouter.useRouter();
     return useFiltersGeneric(
@@ -129,19 +107,12 @@ export function useNextPagesFilters<TSchema extends AnySchema>(
   }
 }
 
-/**
- * Hook for managing filters with React Router v6
- * Uses useLocation and useNavigate from react-router-dom
- * @param schema - Zod schema for filter validation
- * @param opts - Options for parsing and building
- * @returns Filter state and actions
- */
 export function useReactRouterFilters<TSchema extends AnySchema>(
   schema: TSchema,
   opts: UseFiltersOptions<TSchema> = {}
 ) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const rr = require("react-router-dom") as any;
     const navigate = rr.useNavigate();
     const location = rr.useLocation();
