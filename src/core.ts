@@ -40,34 +40,34 @@ function getInnerType(zodType: z.ZodTypeAny): z.ZodTypeAny {
 
 function isArrayType(zodType: z.ZodTypeAny): boolean {
   const inner = getInnerType(zodType);
-  return (inner as any)._def?.type === "array" || (inner as any).type === "array";
+  return (inner as any)._def?.typeName === "ZodArray";
 }
 
 function getArrayElementType(zodType: z.ZodTypeAny): z.ZodTypeAny {
   const inner = getInnerType(zodType);
-  return (inner as any)._def?.element || (inner as any).element;
+  return (inner as any)._def?.type;
 }
 
 function coerceValue(expected: z.ZodTypeAny, value: string): any {
   const inner = getInnerType(expected);
-  const typeName = (inner as any)._def?.type || (inner as any).type;
+  const typeName = (inner as any)._def?.typeName;
 
   switch (typeName) {
-    case "number": {
+    case "ZodNumber": {
       const n = Number(value);
       return Number.isFinite(n) ? n : value;
     }
-    case "boolean": {
+    case "ZodBoolean": {
       const v = value.toLowerCase();
       if (["1", "true", "yes"].includes(v)) return true;
       if (["0", "false", "no"].includes(v)) return false;
       return value;
     }
-    case "date": {
+    case "ZodDate": {
       const d = new Date(value);
       return isNaN(d.getTime()) ? value : d;
     }
-    case "array": {
+    case "ZodArray": {
       return value;
     }
     default:
