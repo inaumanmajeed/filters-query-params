@@ -4,6 +4,7 @@ import type {
   BuildOptions,
   CleanOptions,
   ParseOptions,
+  DebouncedFunction,
 } from "./types";
 import { resolveArraySerializer } from "./serializers";
 
@@ -13,6 +14,71 @@ function isEmpty(val: unknown) {
     val === null ||
     (typeof val === "string" && val.trim() === "")
   );
+}
+
+/**
+ * Creates a debounced function that delays invoking func until after wait milliseconds
+ * have elapsed since the last time the debounced function was invoked.
+ * @param func - The function to debounce
+ * @param wait - The number of milliseconds to delay (default: 300ms)
+ * @returns A debounced version of the function
+ */
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number = 300
+): DebouncedFunction<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  let pendingResolvers: Array<{
+    resolve: (value: ReturnType<T>) => void;
+    reject: (error: any) => void;
+  }> = [];
+
+  const debounced = ((...args: Parameters<T>) => {
+    return new Promise<ReturnType<T>>((resolve, reject) => {
+      // Clear existing timeout
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      // Add this promise to the pending list
+      pendingResolvers.push({ resolve, reject });
+
+      // Set new timeout
+      timeoutId = setTimeout(() => {
+        const resolvers = [...pendingResolvers];
+        pendingResolvers = [];
+        timeoutId = null;
+
+        try {
+          const result = func(...args);
+          // Resolve all pending promises with the same result
+          resolvers.forEach(({ resolve }) => resolve(result));
+        } catch (error) {
+          // Reject all pending promises with the same error
+          resolvers.forEach(({ reject }) => reject(error));
+        }
+      }, wait);
+    });
+  }) as DebouncedFunction<T>;
+
+  debounced.cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+    // Reject all pending promises
+    pendingResolvers.forEach(({ reject }) =>
+      reject(new Error("Debounced function was cancelled"))
+    );
+    pendingResolvers = [];
+  };
+
+  debounced.flush = (...args: Parameters<T>) => {
+    debounced.cancel();
+    return func(...args);
+  };
+
+  return debounced;
 }
 
 /**
@@ -251,4 +317,58 @@ export function resetFilters<TSchema extends AnySchema>(
   defaults: Partial<z.infer<TSchema>> = {}
 ): Partial<z.infer<TSchema>> {
   return { ...defaults } as any;
+}
+
+/**
+ * Creates a debounced version of parseQuery with 300ms delay
+ * @param schema - Zod schema to validate against
+ * @param wait - Debounce delay in milliseconds (default: 300ms)
+ * @returns Debounced parseQuery function
+ */
+export function createDebouncedParseQuery<TSchema extends AnySchema>(
+  schema: TSchema,
+  wait: number = 300
+) {
+  return debounce(
+    (input: string | URLSearchParams, options?: ParseOptions<TSchema>) =>
+      parseQuery(schema, input, options),
+    wait
+  );
+}
+
+/**
+ * Creates a debounced version of buildUrl with 300ms delay
+ * @param schema - Zod schema for validation
+ * @param wait - Debounce delay in milliseconds (default: 300ms)
+ * @returns Debounced buildUrl function
+ */
+export function createDebouncedBuildUrl<TSchema extends AnySchema>(
+  schema: TSchema,
+  wait: number = 300
+) {
+  return debounce(
+    (
+      baseUrl: string,
+      filters: Partial<z.infer<TSchema>>,
+      options?: BuildOptions<TSchema>
+    ) => buildUrl(baseUrl, schema, filters, options),
+    wait
+  );
+}
+
+/**
+ * Creates a debounced version of buildQuery with 300ms delay
+ * @param schema - Zod schema for validation
+ * @param wait - Debounce delay in milliseconds (default: 300ms)
+ * @returns Debounced buildQuery function
+ */
+export function createDebouncedBuildQuery<TSchema extends AnySchema>(
+  schema: TSchema,
+  wait: number = 300
+) {
+  return debounce(
+    (filters: Partial<z.infer<TSchema>>, options?: BuildOptions<TSchema>) =>
+      buildQuery(schema, filters, options),
+    wait
+  );
 }

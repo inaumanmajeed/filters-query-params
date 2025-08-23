@@ -46,3 +46,10 @@ export interface CleanOptions {
 
 /** Any Zod schema type */
 export type AnySchema = z.ZodTypeAny;
+
+/** Debounced function type with cancel and flush methods */
+export interface DebouncedFunction<T extends (...args: any[]) => any> {
+  (...args: Parameters<T>): Promise<ReturnType<T>>;
+  cancel(): void;
+  flush(...args: Parameters<T>): ReturnType<T>;
+}
