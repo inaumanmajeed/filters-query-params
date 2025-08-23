@@ -1,41 +1,85 @@
 {
   "name": "filters-query-params",
-  "version": "0.1.0",
-  "description": "Type-safe filter/query param helpers using Zod. Works with React, Next.js, and React Router.",
-  "keywords": ["filters", "query", "params", "zod", "nextjs", "react", "router"],
+  "version": "1.0.0",
+  "description": "Type-safe URL query parameter management for React, Next.js, and vanilla TypeScript with Zod validation",
+  "keywords": [
+    "filters",
+    "query-params",
+    "search-params",
+    "url",
+    "zod",
+    "nextjs",
+    "react",
+    "react-router",
+    "typescript",
+    "type-safe",
+    "validation"
+  ],
+  "homepage": "https://github.com/inaumanmajeed/filters-query-params#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inaumanmajeed/filters-query-params.git"
+  },
+  "bugs": {
+    "url": "https://github.com/inaumanmajeed/filters-query-params/issues"
+  },
   "license": "MIT",
-  "author": "Nauman <you@example.com>",
+  "author": {
+    "name": "Nauman Majeed",
+    "email": "inaumanmajeed@gmail.com"
+  },
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     }
   },
   "sideEffects": false,
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
   "peerDependencies": {
-    "zod": ">=3.22.0",
-    "react": ">=17 || >=18"
+    "zod": ">=3.22.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "next": {
+      "optional": true
+    },
+    "react-router-dom": {
+      "optional": true
+    }
   },
   "devDependencies": {
-    "@testing-library/react": "^16.0.0",
-    "@types/node": "^20.12.7",
-    "@types/react": "^18.3.3",
-    "react": "^18.3.1",
-    "typescript": "^5.5.4",
-    "tsup": "^8.1.0",
-    "vitest": "^2.0.5"
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.11",
+    "jsdom": "^25.0.1",
+    "react": "^19.1.1",
+    "typescript": "^5.9.2",
+    "tsup": "^8.5.0",
+    "vitest": "^3.2.4",
+    "zod": "3.24.1"
   },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build"
+    "typecheck": "tsc --noEmit",
+    "lint": "echo \"No linter configured\"",
+    "prepublishOnly": "npm run build && npm run test && npm run typecheck"
   }
 }

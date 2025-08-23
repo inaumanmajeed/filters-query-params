@@ -13,7 +13,11 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {},
+    "types": ["node"]
   },
-  "include": ["src", "tests", "examples"]
+  "include": ["src", "tests", "examples"],
+  "ts-node": {
+    "esm": true
+  }
 }

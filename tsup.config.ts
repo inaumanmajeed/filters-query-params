@@ -8,5 +8,12 @@ export default defineConfig({
   clean: true,
   target: "es2020",
   treeshake: true,
-  minify: false
+  minify: false,
+  external: [
+    "next/navigation",
+    "next/router", 
+    "react-router-dom",
+    "react",
+    "zod"
+  ]
 });
