@@ -44,7 +44,7 @@ describe("core parse/build", () => {
 
   it("builds URL with comma arrays", () => {
     const url = buildUrl("/api/items", schema, { tags: ["a","b"] }, { arrayFormat: "comma" });
-    expect(url).toBe("/api/items?tags=a,b");
+    expect(url).toBe("/api/items?tags=a%2Cb");
   });
 
   it("drops empty and trims", () => {

@@ -6,6 +6,12 @@ function isEmpty(val: unknown) {
   return val === undefined || val === null || (typeof val === "string" && val.trim() === "");
 }
 
+/**
+ * Cleans an object by removing empty values and trimming strings
+ * @param obj - The object to clean
+ * @param opts - Cleaning options
+ * @returns A new object with cleaned values
+ */
 export function cleanObject<T extends Record<string, any>>(obj: T, opts: CleanOptions = {}): Partial<T> {
   const out: Partial<T> = {};
   for (const [k, v] of Object.entries(obj)) {
@@ -21,33 +27,47 @@ export function cleanObject<T extends Record<string, any>>(obj: T, opts: CleanOp
   return out;
 }
 
-function coerceValue(expected: z.ZodTypeAny, value: string): any {
-  const typeName = (expected as any)._def?.typeName as string | undefined;
+function getInnerType(zodType: z.ZodTypeAny): z.ZodTypeAny {
+  // Unwrap optional, nullable, and other wrapper types
+  if ((zodType as any)._def?.innerType) {
+    return getInnerType((zodType as any)._def.innerType);
+  }
+  if ((zodType as any)._def?.schema) {
+    return getInnerType((zodType as any)._def.schema);
+  }
+  return zodType;
+}
 
-  // Unwrap optional/nullable wrappers
-  if ((expected as any)._def?.innerType) {
-    return coerceValue((expected as any)._def.innerType, value);
-  }
-  if ((expected as any)._def?.schema) {
-    return coerceValue((expected as any)._def.schema, value);
-  }
+function isArrayType(zodType: z.ZodTypeAny): boolean {
+  const inner = getInnerType(zodType);
+  return (inner as any)._def?.type === "array" || (inner as any).type === "array";
+}
+
+function getArrayElementType(zodType: z.ZodTypeAny): z.ZodTypeAny {
+  const inner = getInnerType(zodType);
+  return (inner as any)._def?.element || (inner as any).element;
+}
+
+function coerceValue(expected: z.ZodTypeAny, value: string): any {
+  const inner = getInnerType(expected);
+  const typeName = (inner as any)._def?.type || (inner as any).type;
 
   switch (typeName) {
-    case "ZodNumber": {
+    case "number": {
       const n = Number(value);
-      return Number.isFinite(n) ? n : undefined;
+      return Number.isFinite(n) ? n : value;
     }
-    case "ZodBoolean": {
+    case "boolean": {
       const v = value.toLowerCase();
       if (["1", "true", "yes"].includes(v)) return true;
       if (["0", "false", "no"].includes(v)) return false;
-      return undefined;
+      return value;
     }
-    case "ZodDate": {
+    case "date": {
       const d = new Date(value);
-      return isNaN(d.getTime()) ? undefined : d;
+      return isNaN(d.getTime()) ? value : d;
     }
-    case "ZodArray": {
+    case "array": {
       return value;
     }
     default:
@@ -55,6 +75,13 @@ function coerceValue(expected: z.ZodTypeAny, value: string): any {
   }
 }
 
+/**
+ * Parses a query string or URLSearchParams into a validated object using a Zod schema
+ * @param schema - Zod schema to validate against
+ * @param input - Query string or URLSearchParams object
+ * @param options - Parsing options
+ * @returns Parsed and validated object
+ */
 export function parseQuery<TSchema extends AnySchema>(
   schema: TSchema,
   input: string | URLSearchParams,
@@ -77,10 +104,8 @@ export function parseQuery<TSchema extends AnySchema>(
       continue;
     }
 
-    const typeName = (expected as any)._def?.typeName as string | undefined;
-
-    if (typeName === "ZodArray") {
-      const inner = (expected as any)._def.type as z.ZodTypeAny;
+    if (isArrayType(expected)) {
+      const inner = getArrayElementType(expected);
       const fmt = options.arrayKeyFormat?.[key as keyof z.infer<TSchema> & string] || options.arrayFormat || "repeat";
       const ser = resolveArraySerializer(fmt);
       const arr = ser.deserializeArray!(key, entries).map((val) => {
@@ -100,6 +125,13 @@ export function parseQuery<TSchema extends AnySchema>(
   return schema.parse(cleaned);
 }
 
+/**
+ * Builds a URLSearchParams object from filters using a Zod schema
+ * @param schema - Zod schema for validation
+ * @param filters - Filter object to serialize
+ * @param options - Build options
+ * @returns URLSearchParams object
+ */
 export function buildQuery<TSchema extends AnySchema>(
   schema: TSchema,
   filters: Partial<z.infer<TSchema>>,
@@ -116,9 +148,7 @@ export function buildQuery<TSchema extends AnySchema>(
       continue;
     }
 
-    const typeName = (expected as any)._def?.typeName as string | undefined;
-
-    if (typeName === "ZodArray" && Array.isArray(value)) {
+    if (isArrayType(expected) && Array.isArray(value)) {
       const fmt = options.arrayKeyFormat?.[key as keyof z.infer<TSchema> & string] || options.arrayFormat || "repeat";
       const ser = resolveArraySerializer(fmt);
       const items = (value as unknown[]).map(v => v instanceof Date && options.encodeDate ? v.toISOString() : String(v));
@@ -133,6 +163,14 @@ export function buildQuery<TSchema extends AnySchema>(
   return params;
 }
 
+/**
+ * Builds a complete URL with query parameters from filters
+ * @param baseUrl - Base URL (e.g., "/products")
+ * @param schema - Zod schema for validation
+ * @param filters - Filter object to serialize
+ * @param options - Build options
+ * @returns Complete URL with query parameters
+ */
 export function buildUrl<TSchema extends AnySchema>(
   baseUrl: string,
   schema: TSchema,
@@ -146,6 +184,13 @@ export function buildUrl<TSchema extends AnySchema>(
   return `${baseUrl}${sep}${qs}`;
 }
 
+/**
+ * Merges two filter objects, with the second taking precedence
+ * @param current - Current filter values
+ * @param next - New filter values to merge
+ * @param options - Merge options
+ * @returns Merged filter object
+ */
 export function mergeFilters<TSchema extends AnySchema>(
   current: Partial<z.infer<TSchema>>,
   next: Partial<z.infer<TSchema>>,
@@ -155,6 +200,12 @@ export function mergeFilters<TSchema extends AnySchema>(
   return options.dropEmpty ? (cleanObject(merged, { dropEmpty: true }) as any) : merged;
 }
 
+/**
+ * Resets filters to default values
+ * @param _schema - Zod schema (for type inference)
+ * @param defaults - Default values to use
+ * @returns Reset filter object
+ */
 export function resetFilters<TSchema extends AnySchema>(
   _schema: TSchema,
   defaults: Partial<z.infer<TSchema>> = {}
