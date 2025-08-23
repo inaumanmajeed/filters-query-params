@@ -6,17 +6,17 @@ Type-safe URL query parameter management for React, Next.js, and vanilla TypeScr
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
-## 🛠️ Technologies & Features
+## ✨ Features
 
-- **🛡️ Type-safe** with Zod schema validation
-- **🔄 Smart type coercion** (string → number/boolean/date)
-- **🧹 Data cleaning** (drop empty values, trim strings, strip unknown keys)
-- **📦 Multiple array formats** (repeat, comma, JSON)
-- **📅 Date handling** with ISO encoding/decoding
-- **⚡ Debouncing** with 300ms default delay
-- **⚛️ React hooks** for Next.js (App/Pages Router) and React Router
-- **🚀 SSR-ready** with server-side helpers
-- **📝 ESM + CJS** with full TypeScript definitions
+- 🛡️ **Type-safe** with Zod schema validation
+- 🔄 **Smart type coercion** (string → number/boolean/date)
+- 🧹 **Data cleaning** (drop empty values, trim strings, strip unknown keys)
+- 📦 **Multiple array formats** (repeat, comma, JSON)
+- 📅 **Date handling** with ISO encoding/decoding
+- ⚡ **Debouncing** with 300ms default delay
+- ⚛️ **React hooks** for Next.js (App/Pages Router) and React Router
+- 🚀 **SSR-ready** with server-side helpers
+- 📝 **ESM + CJS** with full TypeScript definitions
 
 ## 📦 Installation
 
@@ -42,7 +42,7 @@ const filtersSchema = z.object({
 });
 ```
 
-### 2. Core Functions
+### 2. Core Usage
 
 #### Parse Query Strings
 
@@ -75,30 +75,6 @@ const url = buildUrl(
 
 const queryParams = buildQuery(filtersSchema, { search: "laptop" });
 // Result: URLSearchParams object
-```
-
-#### Utility Functions
-
-```typescript
-import { cleanObject, mergeFilters, resetFilters } from "filters-query-params";
-
-// Clean data
-const clean = cleanObject(
-  { name: " John ", age: "", active: true },
-  {
-    trimStrings: true,
-    dropEmpty: true,
-  }
-);
-// Result: { name: "John", active: true }
-
-// Merge filters
-const merged = mergeFilters({ search: "old" }, { category: "new" });
-// Result: { search: "old", category: "new" }
-
-// Reset to defaults
-const reset = resetFilters(filtersSchema, { category: "electronics" });
-// Result: { category: "electronics" }
 ```
 
 ### 3. React Hooks
@@ -151,26 +127,25 @@ export function ProductsPage() {
 }
 ```
 
-### 4. Debouncing (Performance Optimization)
+### 4. Utility Functions
 
 ```typescript
-import { debounce, createDebouncedParseQuery } from "filters-query-params";
+import { cleanObject, mergeFilters, resetFilters } from "filters-query-params";
 
-// Debounce any function with 300ms delay
-const debouncedSearch = debounce(async (query: string) => {
-  return fetch(`/api/search?q=${query}`);
-}, 300);
+// Clean data
+const clean = cleanObject(
+  { name: " John ", age: "", active: true },
+  { trimStrings: true, dropEmpty: true }
+);
+// Result: { name: "John", active: true }
 
-// Debounced query parsing
-const debouncedParseQuery = createDebouncedParseQuery(filtersSchema, 300);
+// Merge filters
+const merged = mergeFilters({ search: "old" }, { category: "new" });
+// Result: { search: "old", category: "new" }
 
-// Multiple rapid calls - only the last one executes
-debouncedParseQuery("?search=laptop");
-debouncedParseQuery("?search=macbook"); // Only this will execute after 300ms
-
-// Cancel or flush immediately
-debouncedParseQuery.cancel();
-const immediate = debouncedParseQuery.flush("?search=immediate");
+// Reset to defaults
+const reset = resetFilters(filtersSchema, { category: "electronics" });
+// Result: { category: "electronics" }
 ```
 
 ### 5. Server-Side Rendering
@@ -200,6 +175,14 @@ const filters2 = getFiltersFromSearch(filtersSchema, "?search=laptop&page=1");
 | `mergeFilters(current, next, options?)`        | Merge filter objects               | `mergeFilters(old, new)`               |
 | `resetFilters(schema, defaults?)`              | Reset to default values            | `resetFilters(schema, { page: 1 })`    |
 
+### React Hooks
+
+| Hook                                      | Framework            | Purpose                      |
+| ----------------------------------------- | -------------------- | ---------------------------- |
+| `useNextAppFilters(schema, options?)`     | Next.js App Router   | Manage filters with URL sync |
+| `useNextPagesFilters(schema, options?)`   | Next.js Pages Router | Manage filters with URL sync |
+| `useReactRouterFilters(schema, options?)` | React Router         | Manage filters with URL sync |
+
 ### Debouncing Functions
 
 | Function                                    | Purpose                  | Example                             |
@@ -209,21 +192,14 @@ const filters2 = getFiltersFromSearch(filtersSchema, "?search=laptop&page=1");
 | `createDebouncedBuildUrl(schema, delay?)`   | Debounced URL building   | `createDebouncedBuildUrl(schema)`   |
 | `createDebouncedBuildQuery(schema, delay?)` | Debounced query building | `createDebouncedBuildQuery(schema)` |
 
-### React Hooks
-
-| Hook                                                            | Framework            | Purpose                      |
-| --------------------------------------------------------------- | -------------------- | ---------------------------- |
-| `useNextAppFilters(schema, options?)`                           | Next.js App Router   | Manage filters with URL sync |
-| `useNextPagesFilters(schema, options?)`                         | Next.js Pages Router | Manage filters with URL sync |
-| `useReactRouterFilters(schema, options?)`                       | React Router         | Manage filters with URL sync |
-| `useFiltersGeneric(getCurrentUrl, updateUrl, schema, options?)` | Generic              | Custom URL management        |
-
 ### SSR Helpers
 
 | Function                                         | Purpose                            | Example                                   |
 | ------------------------------------------------ | ---------------------------------- | ----------------------------------------- |
 | `getFiltersFromUrl(schema, url, options?)`       | Extract filters from full URL      | `getFiltersFromUrl(schema, req.url)`      |
 | `getFiltersFromSearch(schema, search, options?)` | Extract filters from search params | `getFiltersFromSearch(schema, "?q=test")` |
+
+## ⚙️ Configuration
 
 ### Array Formats
 
@@ -249,253 +225,29 @@ const filters2 = getFiltersFromSearch(filtersSchema, "?search=laptop&page=1");
 }
 ```
 
-## 📄 License
+## � Advanced Usage
 
-MIT License - see [LICENSE](./LICENSE) for details.
-
-Copyright (c) 2025 [Nauman Majeed](https://github.com/inaumanmajeed)
+### Debouncing
 
 ```typescript
-import { useReactRouterFilters } from "filters-query-params";
-import { productFiltersSchema } from "./schema";
+import { debounce, createDebouncedParseQuery } from "filters-query-params";
 
-export default function ProductsPage() {
-  const { filters, setFilters, reset } =
-    useReactRouterFilters(productFiltersSchema);
+// Debounce any function
+const debouncedSearch = debounce(async (query: string) => {
+  return fetch(`/api/search?q=${query}`);
+}, 300);
 
-  // Same component code as above...
-}
+// Debounced query parsing
+const debouncedParseQuery = createDebouncedParseQuery(filtersSchema, 300);
+debouncedParseQuery("?search=laptop");
+debouncedParseQuery("?search=macbook"); // Only this executes after 300ms
+
+// Cancel or flush immediately
+debouncedParseQuery.cancel();
+const immediate = debouncedParseQuery.flush("?search=immediate");
 ```
 
-### 3. Manual URL Building & Parsing
-
-```typescript
-import { buildUrl, parseQuery, buildQuery } from "filters-query-params";
-import { productFiltersSchema } from "./schema";
-
-// Build URL from filters
-const url = buildUrl(
-  "/products",
-  productFiltersSchema,
-  {
-    search: "sneakers",
-    tags: ["eco", "sale"],
-    priceMin: 50,
-    priceMax: 200,
-    inStock: true,
-    createdAfter: new Date("2024-01-01"),
-  },
-  {
-    arrayFormat: "repeat",
-    encodeDate: true,
-  }
-);
-// Result: /products?search=sneakers&tags=eco&tags=sale&priceMin=50&priceMax=200&inStock=true&createdAfter=2024-01-01T00%3A00%3A00.000Z
-
-// Parse query string
-const filters = parseQuery(
-  productFiltersSchema,
-  "?search=shoes&priceMin=100&inStock=true",
-  {
-    coerceTypes: true,
-    dropEmpty: true,
-    trimStrings: true,
-  }
-);
-// Result: { search: "shoes", priceMin: 100, inStock: true }
-
-// Build query string only
-const queryParams = buildQuery(productFiltersSchema, {
-  search: "shoes",
-  tags: ["new"],
-});
-console.log(queryParams.toString()); // "search=shoes&tags=new"
-```
-
-## 🔧 API Reference
-
-### Core Functions
-
-#### `parseQuery(schema, input, options?)`
-
-Parses a query string or URLSearchParams into a validated object.
-
-```typescript
-parseQuery(
-  schema: ZodSchema,
-  input: string | URLSearchParams,
-  options?: ParseOptions
-)
-```
-
-**Options:**
-
-- `coerceTypes?: boolean` - Convert strings to numbers/booleans/dates (default: false)
-- `dropEmpty?: boolean` - Remove empty/null/undefined values (default: false)
-- `trimStrings?: boolean` - Trim whitespace from strings (default: false)
-- `stripUnknown?: boolean` - Remove keys not in schema (default: false)
-- `arrayFormat?: "repeat" | "comma" | "json"` - Array parsing format (default: "repeat")
-- `arrayKeyFormat?: Record<string, ArrayFormat>` - Per-key array formats
-
-#### `buildQuery(schema, filters, options?)`
-
-Builds a URLSearchParams object from filters.
-
-```typescript
-buildQuery(
-  schema: ZodSchema,
-  filters: Partial<SchemaType>,
-  options?: BuildOptions
-)
-```
-
-#### `buildUrl(baseUrl, schema, filters, options?)`
-
-Builds a complete URL with query parameters.
-
-```typescript
-buildUrl(
-  baseUrl: string,
-  schema: ZodSchema,
-  filters: Partial<SchemaType>,
-  options?: BuildOptions
-)
-```
-
-**Build Options:**
-
-- `dropEmpty?: boolean` - Skip empty values
-- `trimStrings?: boolean` - Trim strings before encoding
-- `stripUnknown?: boolean` - Skip unknown keys
-- `encodeDate?: boolean` - Encode dates as ISO strings (default: false)
-- `arrayFormat?: "repeat" | "comma" | "json"` - Array serialization format
-- `arrayKeyFormat?: Record<string, ArrayFormat>` - Per-key array formats
-
-### React Hooks
-
-#### `useNextAppFilters(schema, options?)`
-
-For Next.js App Router (`useSearchParams` + `useRouter`).
-
-#### `useNextPagesFilters(schema, options?)`
-
-For Next.js Pages Router (`useRouter` from `next/router`).
-
-#### `useReactRouterFilters(schema, options?)`
-
-For React Router v6 (`useLocation` + `useNavigate`).
-
-**Hook Options:**
-
-- `parse?: ParseOptions` - Options for parsing URL params
-- `build?: BuildOptions` - Options for building URLs
-- `basePath?: string` - Base path for URLs (auto-detected)
-
-**Returns:**
-
-- `filters` - Current parsed filters
-- `setFilters(newFilters)` - Merge new filters and update URL
-- `reset(defaults?)` - Clear filters (optionally set defaults)
-
-### Utility Functions
-
-#### `mergeFilters(current, next, options?)`
-
-Merges two filter objects.
-
-```typescript
-const merged = mergeFilters(
-  { search: "shoes", priceMin: 50 },
-  { priceMax: 200, search: "boots" },
-  { dropEmpty: true }
-);
-// Result: { search: "boots", priceMin: 50, priceMax: 200 }
-```
-
-#### `resetFilters(schema, defaults?)`
-
-Resets filters to defaults.
-
-```typescript
-const reset = resetFilters(schema, { sortBy: "newest" });
-```
-
-#### `cleanObject(object, options?)`
-
-Cleans an object by removing empty values and trimming strings.
-
-```typescript
-const cleaned = cleanObject(
-  { name: "  John  ", age: "", city: null },
-  { dropEmpty: true, trimStrings: true }
-);
-// Result: { name: "John" }
-```
-
-### Server-Side Helpers (Next.js)
-
-#### `getFiltersFromUrl(schema, fullUrl, options?)`
-
-Parse filters from a complete URL (useful in API routes).
-
-```typescript
-// In API route or server component
-const filters = getFiltersFromUrl(
-  productFiltersSchema,
-  "https://example.com/products?search=shoes&priceMin=100",
-  { coerceTypes: true }
-);
-```
-
-#### `getFiltersFromSearch(schema, searchString, options?)`
-
-Parse filters from a search string.
-
-```typescript
-const filters = getFiltersFromSearch(
-  productFiltersSchema,
-  "?search=shoes&priceMin=100",
-  { coerceTypes: true }
-);
-```
-
-## 🎯 Array Formats
-
-### Repeat Format (Default)
-
-```
-?tags=eco&tags=sale&tags=new
-```
-
-### Comma Format
-
-```
-?tags=eco,sale,new
-```
-
-### JSON Format
-
-```
-?tags=["eco","sale","new"]
-```
-
-### Mixed Formats
-
-```typescript
-const { filters } = useNextAppFilters(schema, {
-  build: {
-    arrayFormat: "repeat", // default for most arrays
-    arrayKeyFormat: {
-      tags: "comma", // use comma for tags specifically
-      categories: "json", // use JSON for categories
-    },
-  },
-});
-```
-
-## 📅 Date Handling
-
-Dates are automatically encoded/decoded as ISO strings when `encodeDate: true`:
+### Date Handling
 
 ```typescript
 const url = buildUrl(
@@ -513,9 +265,7 @@ const filters = parseQuery(schema, url, { coerceTypes: true });
 console.log(filters.startDate instanceof Date); // true
 ```
 
-## 🧹 Data Cleaning
-
-The library provides automatic data cleaning:
+### Data Cleaning
 
 ```typescript
 const filters = parseQuery(schema, "?search=  hello  &category=&priceMin=0", {
@@ -526,132 +276,26 @@ const filters = parseQuery(schema, "?search=  hello  &category=&priceMin=0", {
 // Result: { search: "hello", priceMin: 0 }
 ```
 
-## 🎨 TypeScript Support
-
-Full TypeScript support with proper type inference:
+### Mixed Array Formats
 
 ```typescript
-const schema = z.object({
-  search: z.string().optional(),
-  price: z.number().optional(),
-  tags: z.array(z.string()).optional(),
-});
-
-const { filters, setFilters } = useNextAppFilters(schema);
-
-// filters is typed as:
-// {
-//   search?: string;
-//   price?: number;
-//   tags?: string[];
-// }
-
-setFilters({
-  search: "hello", // ✅
-  price: 42, // ✅
-  invalid: "key", // ❌ TypeScript error
+const { filters } = useNextAppFilters(schema, {
+  build: {
+    arrayFormat: "repeat", // default for most arrays
+    arrayKeyFormat: {
+      tags: "comma", // use comma for tags specifically
+      categories: "json", // use JSON for categories
+    },
+  },
 });
 ```
 
-## 🤝 Contributing
+## � Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-MIT © [Nauman Majeed](https://github.com/inaumanmajeed)
-const filters = parseQuery(productFilterSchema, window.location.search, {
-coerceTypes: true,
-arrayFormat: "repeat"
-});
+MIT License - see [LICENSE](./LICENSE) for details.
 
-````
-
-## 🧩 Next.js (App Router) Hook
-```tsx
-"use client";
-import { productFilterSchema } from "./schema";
-import { useNextAppFilters } from "filters-query-params";
-
-export default function ProductsPage() {
-  const { filters, setFilters, reset } = useNextAppFilters(productFilterSchema, {
-    build: { arrayFormat: "repeat", encodeDate: true },
-    parse: { arrayFormat: "repeat", coerceTypes: true }
-  });
-
-  return (
-    <div>
-      <input
-        value={filters.search ?? ""}
-        onChange={(e) => setFilters({ search: e.target.value })}
-        placeholder="Search products"
-      />
-      <button onClick={() => setFilters({ inStock: true })}>In stock</button>
-      <button onClick={() => setFilters({ tags: ["eco", "sale"] })}>Tags</button>
-      <button onClick={() => reset()}>Reset</button>
-    </div>
-  );
-}
-````
-
-## 🧭 React Router v6 Hook
-
-```tsx
-import { productFilterSchema } from "./schema";
-import { useReactRouterFilters } from "filters-query-params";
-
-export function Catalog() {
-  const { filters, setFilters, reset } =
-    useReactRouterFilters(productFilterSchema);
-
-  return (
-    <div>
-      <select
-        value={filters.sortBy ?? "price"}
-        onChange={(e) => setFilters({ sortBy: e.target.value as any })}
-      >
-        <option value="price">Price</option>
-        <option value="rating">Rating</option>
-        <option value="newest">Newest</option>
-      </select>
-      <button onClick={() => reset({ sortBy: "newest" })}>
-        Reset to defaults
-      </button>
-    </div>
-  );
-}
-```
-
-## 🧪 Tests
-
-Run all tests:
-
-```bash
-npm test
-```
-
-## 🛠 VS Code Dev
-
-1. Open the folder in VS Code.
-2. Install deps: `npm install`
-3. Build library: `npm run build` (or `npm run dev` for watch)
-4. Run tests: `npm test` or `npm run test:watch`
-5. Try locally in another app:
-   ```bash
-   npm link
-   cd ../your-app
-   npm link filters-query-params
-   ```
-
-## 🧰 SSR Helpers
-
-```ts
-import { getFiltersFromUrl } from "filters-query-params";
-const filters = getFiltersFromUrl(schema, req.url);
-```
-
-## 📜 License
-
-MIT
-
-# react-next-filters
+Copyright © 2025 [Nauman Majeed](https://github.com/inaumanmajeed)
