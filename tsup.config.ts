@@ -11,7 +11,7 @@ export default defineConfig({
   minify: false,
   external: [
     "next/navigation",
-    "next/router", 
+    "next/router",
     "react-router-dom",
     "react",
     "zod"

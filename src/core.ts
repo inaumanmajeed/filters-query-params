@@ -16,13 +16,6 @@ function isEmpty(val: unknown) {
   );
 }
 
-/**
- * Creates a debounced function that delays invoking func until after wait milliseconds
- * have elapsed since the last time the debounced function was invoked.
- * @param func - The function to debounce
- * @param wait - The number of milliseconds to delay (default: 300ms)
- * @returns A debounced version of the function
- */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number = 300
@@ -35,15 +28,13 @@ export function debounce<T extends (...args: any[]) => any>(
 
   const debounced = ((...args: Parameters<T>) => {
     return new Promise<ReturnType<T>>((resolve, reject) => {
-      // Clear existing timeout
+
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
 
-      // Add this promise to the pending list
       pendingResolvers.push({ resolve, reject });
 
-      // Set new timeout
       timeoutId = setTimeout(() => {
         const resolvers = [...pendingResolvers];
         pendingResolvers = [];
@@ -51,10 +42,10 @@ export function debounce<T extends (...args: any[]) => any>(
 
         try {
           const result = func(...args);
-          // Resolve all pending promises with the same result
+
           resolvers.forEach(({ resolve }) => resolve(result));
         } catch (error) {
-          // Reject all pending promises with the same error
+
           resolvers.forEach(({ reject }) => reject(error));
         }
       }, wait);
@@ -66,7 +57,7 @@ export function debounce<T extends (...args: any[]) => any>(
       clearTimeout(timeoutId);
       timeoutId = null;
     }
-    // Reject all pending promises
+
     pendingResolvers.forEach(({ reject }) =>
       reject(new Error("Debounced function was cancelled"))
     );
@@ -81,12 +72,6 @@ export function debounce<T extends (...args: any[]) => any>(
   return debounced;
 }
 
-/**
- * Cleans an object by removing empty values and trimming strings
- * @param obj - The object to clean
- * @param opts - Cleaning options
- * @returns A new object with cleaned values
- */
 export function cleanObject<T extends Record<string, any>>(
   obj: T,
   opts: CleanOptions = {}
@@ -97,7 +82,7 @@ export function cleanObject<T extends Record<string, any>>(
       const t = v.trim();
       if (!(opts.dropEmpty && t === "")) out[k as keyof T] = t as any;
     } else if (opts.dropEmpty && isEmpty(v)) {
-      // skip
+
     } else {
       out[k as keyof T] = v as any;
     }
@@ -106,7 +91,7 @@ export function cleanObject<T extends Record<string, any>>(
 }
 
 function getInnerType(zodType: z.ZodTypeAny): z.ZodTypeAny {
-  // Unwrap optional, nullable, and other wrapper types
+
   if ((zodType as any)._def?.innerType) {
     return getInnerType((zodType as any)._def.innerType);
   }
@@ -153,13 +138,6 @@ function coerceValue(expected: z.ZodTypeAny, value: string): any {
   }
 }
 
-/**
- * Parses a query string or URLSearchParams into a validated object using a Zod schema
- * @param schema - Zod schema to validate against
- * @param input - Query string or URLSearchParams object
- * @param options - Parsing options
- * @returns Parsed and validated object
- */
 export function parseQuery<TSchema extends AnySchema>(
   schema: TSchema,
   input: string | URLSearchParams,
@@ -213,13 +191,6 @@ export function parseQuery<TSchema extends AnySchema>(
   return schema.parse(cleaned);
 }
 
-/**
- * Builds a URLSearchParams object from filters using a Zod schema
- * @param schema - Zod schema for validation
- * @param filters - Filter object to serialize
- * @param options - Build options
- * @returns URLSearchParams object
- */
 export function buildQuery<TSchema extends AnySchema>(
   schema: TSchema,
   filters: Partial<z.infer<TSchema>>,
@@ -263,14 +234,6 @@ export function buildQuery<TSchema extends AnySchema>(
   return params;
 }
 
-/**
- * Builds a complete URL with query parameters from filters
- * @param baseUrl - Base URL (e.g., "/products")
- * @param schema - Zod schema for validation
- * @param filters - Filter object to serialize
- * @param options - Build options
- * @returns Complete URL with query parameters
- */
 export function buildUrl<TSchema extends AnySchema>(
   baseUrl: string,
   schema: TSchema,
@@ -288,13 +251,6 @@ export function buildUrl<TSchema extends AnySchema>(
   return `${baseUrl}${sep}${qs}`;
 }
 
-/**
- * Merges two filter objects, with the second taking precedence
- * @param current - Current filter values
- * @param next - New filter values to merge
- * @param options - Merge options
- * @returns Merged filter object
- */
 export function mergeFilters<TSchema extends AnySchema>(
   current: Partial<z.infer<TSchema>>,
   next: Partial<z.infer<TSchema>>,
@@ -306,12 +262,6 @@ export function mergeFilters<TSchema extends AnySchema>(
     : merged;
 }
 
-/**
- * Resets filters to default values
- * @param _schema - Zod schema (for type inference)
- * @param defaults - Default values to use
- * @returns Reset filter object
- */
 export function resetFilters<TSchema extends AnySchema>(
   _schema: TSchema,
   defaults: Partial<z.infer<TSchema>> = {}
@@ -319,12 +269,6 @@ export function resetFilters<TSchema extends AnySchema>(
   return { ...defaults } as any;
 }
 
-/**
- * Creates a debounced version of parseQuery with 300ms delay
- * @param schema - Zod schema to validate against
- * @param wait - Debounce delay in milliseconds (default: 300ms)
- * @returns Debounced parseQuery function
- */
 export function createDebouncedParseQuery<TSchema extends AnySchema>(
   schema: TSchema,
   wait: number = 300
@@ -336,12 +280,6 @@ export function createDebouncedParseQuery<TSchema extends AnySchema>(
   );
 }
 
-/**
- * Creates a debounced version of buildUrl with 300ms delay
- * @param schema - Zod schema for validation
- * @param wait - Debounce delay in milliseconds (default: 300ms)
- * @returns Debounced buildUrl function
- */
 export function createDebouncedBuildUrl<TSchema extends AnySchema>(
   schema: TSchema,
   wait: number = 300
@@ -356,12 +294,6 @@ export function createDebouncedBuildUrl<TSchema extends AnySchema>(
   );
 }
 
-/**
- * Creates a debounced version of buildQuery with 300ms delay
- * @param schema - Zod schema for validation
- * @param wait - Debounce delay in milliseconds (default: 300ms)
- * @returns Debounced buildQuery function
- */
 export function createDebouncedBuildQuery<TSchema extends AnySchema>(
   schema: TSchema,
   wait: number = 300
